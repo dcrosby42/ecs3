@@ -1,8 +1,8 @@
 local console = {
-	_VERSION     = 'love-console v0.1.0',
-	_DESCRIPTION = 'Simple love2d console overlay',
-	_URL         = 'https://github.com/hamsterready/love-console',
-	_LICENSE     = [[
+	_VERSION = "love-console v0.1.0",
+	_DESCRIPTION = "Simple love2d console overlay",
+	_URL = "https://github.com/hamsterready/love-console",
+	_LICENSE = [[
 		The MIT License (MIT)
 
 		Copyright (c) 2014 Maciej Lopacinski
@@ -27,8 +27,9 @@ local console = {
 	]],
 	-- hm, should it be stored in console or as module locals?
 	-- need to read more http://kiki.to/blog/2014/03/31/rule-2-return-a-local-table/
-	
-	_KEY_TOGGLE = "`",--"f2",--
+
+	_KEY_TOGGLE = "`",
+	--"f2",--
 	_KEY_SUBMIT = "return",
 	_KEY_CLEAR = "escape",
 	_KEY_DELETE = "backspace",
@@ -38,7 +39,6 @@ local console = {
 	_KEY_RIGHT = "right",
 	_KEY_PAGEDOWN = "pagedown",
 	_KEY_PAGEUP = "pageup",
-
 	cursor = 0,
 	cursorlife = 1,
 	visible = false,
@@ -55,7 +55,6 @@ local console = {
 	ps = "> ",
 	mode = "none", --Options are "none", "wrap", "scissors" or "bind"
 	motd = 'Welcome user!\nType "help" for an index of available commands.',
-
 	-- This table has as its keys the names of commands as
 	-- strings, which the user must type to run the command.  The
 	-- values are themselves tables with two properties:
@@ -67,37 +66,43 @@ local console = {
 	--
 	-- See the function defineCommand() for examples of adding
 	-- entries to this table.
-	commands = {} 
+	commands = {}
 }
 -- Dynamic polygons used to draw the arrows
-local up = function (x, y, w)
+local up = function(x, y, w)
 	w = w * .7
 	local h = w * .7
 	return {
-		x, y + h;
-		x + w, y + h;
-		x + w/2, y
+		x,
+		y + h,
+		x + w,
+		y + h,
+		x + w / 2,
+		y
 	}
 end
 
-local down = function (x, y, w)
+local down = function(x, y, w)
 	w = w * .7
 	local h = w * .7
 	return {
-		x, y;
-		x + w, y;
-		x + w/2, y + h
+		x,
+		y,
+		x + w,
+		y,
+		x + w / 2,
+		y + h
 	}
 end
---When you use wrap or bind, the total number of lines depends 
+--When you use wrap or bind, the total number of lines depends
 --on the number of lines used by each entry.
-local totalLines = function ()
+local totalLines = function()
 	if console.mode == "wrap" or console.mode == "bind" then
 		local a, b = 1, 1
 		local width = console.w - console.margin * 2
-		for i,t in ipairs(console.logs) do
+		for i, t in ipairs(console.logs) do
 			b = a
-			local _,u = console.font:getWrap(t.msg, width)
+			local _, u = console.font:getWrap(t.msg, width)
 			a = a + u
 		end
 		return a
@@ -107,7 +112,8 @@ local totalLines = function ()
 end
 
 local function toboolean(v)
-	return (type(v) == "string" and v == "true") or (type(v) == "string" and v == "1") or (type(v) == "number" and v ~= 0) or (type(v) == "boolean" and v)
+	return (type(v) == "string" and v == "true") or (type(v) == "string" and v == "1") or (type(v) == "number" and v ~= 0) or
+		(type(v) == "boolean" and v)
 end
 
 -- http://lua-users.org/wiki/StringTrim trim2
@@ -121,22 +127,22 @@ local function string_split(s, d)
 	local t = {}
 	local i = 0
 	local f
-	local match = '(.-)' .. d .. '()'
-	
+	local match = "(.-)" .. d .. "()"
+
 	if string.find(s, d) == nil then
 		return {s}
 	end
-	
+
 	for sub, j in string.gmatch(s, match) do
 		i = i + 1
 		t[i] = sub
 		f = j
 	end
-	
+
 	if i ~= 0 then
-		t[i+1] = string.sub(s, f)
+		t[i + 1] = string.sub(s, f)
 	end
-	
+
 	return t
 end
 
@@ -145,7 +151,7 @@ local function merge_quoted(t)
 	local merging = false
 	local buf = ""
 	for k, v in ipairs(t) do
-		local f, l = v:sub(1,1), v:sub(v:len())
+		local f, l = v:sub(1, 1), v:sub(v:len())
 		if f == '"' and l ~= '"' then
 			merging = true
 			buf = v
@@ -154,10 +160,10 @@ local function merge_quoted(t)
 				buf = buf .. " " .. v
 				if l == '"' then
 					merging = false
-					table.insert(ret, buf:sub(2,-2))
+					table.insert(ret, buf:sub(2, -2))
 				end
 			else
-				if f == "\"" and l == f then
+				if f == '"' and l == f then
 					table.insert(ret, v:sub(2, -2))
 				else
 					table.insert(ret, v)
@@ -169,31 +175,32 @@ local function merge_quoted(t)
 end
 
 function console.load(font, keyRepeat, inputCallback, mode, levels)
-
 	if mode == "none" or mode == "wrap" or mode == "scissors" or mode == "bind" then
 		console.mode = mode
 	end
 
 	love.keyboard.setKeyRepeat(keyRepeat or false)
 
-	console.font		= font or love.graphics.newFont(console.fontSize)
-	console.fontSize	= font and font:getHeight() or console.fontSize
-	console.margin		= console.fontSize
-	console.lineSpacing	= 1.25
-	console.lineHeight	= console.fontSize * console.lineSpacing
+	console.font = font or love.graphics.newFont(console.fontSize)
+	console.fontSize = font and font:getHeight() or console.fontSize
+	console.margin = console.fontSize
+	console.lineSpacing = 1.25
+	console.lineHeight = console.fontSize * console.lineSpacing
 	console.x, console.y = 0, 0
 
 	console.colors = {}
-	console.colors["I"] = {r = 251/255, g = 241/255, b = 213/255, a = 255/255}
-	console.colors["D"] = {r = 235/255, g = 197/255, b =  50/255, a = 255/255}
-	console.colors["E"] = {r = 222/255, g =  69/255, b =  61/255, a = 255/255}
-	
-	console.colors["background"] = 	{r =  23/255, g =  55/255, b =  86/255, a = 190/255}
-	console.colors["input"]      = 	{r =  23/255, g =  55/255, b =  86/255, a = 255/255}
-	console.colors["default"]    = 	{r = 215/255, g = 213/255, b = 174/255, a = 255/255}
+	console.colors["I"] = {r = 251 / 255, g = 241 / 255, b = 213 / 255, a = 255 / 255}
+	console.colors["D"] = {r = 235 / 255, g = 197 / 255, b = 50 / 255, a = 255 / 255}
+	console.colors["E"] = {r = 222 / 255, g = 69 / 255, b = 61 / 255, a = 255 / 255}
 
-	console.levels = levels or {info = true, debug=true, error=true}
+	console.colors["background"] = {r = 23 / 255, g = 55 / 255, b = 86 / 255, a = 190 / 255}
+	console.colors["input"] = {r = 23 / 255, g = 55 / 255, b = 86 / 255, a = 255 / 255}
+	console.colors["default"] = {r = 215 / 255, g = 213 / 255, b = 174 / 255, a = 255 / 255}
+
+	console.levels = levels or {info = true, debug = true, error = true}
 	console.inputCallback = inputCallback or console.defaultInputCallback
+
+	console.mouseWheelThreshold = 1
 
 	console.resize(love.graphics.getWidth(), love.graphics.getHeight())
 end
@@ -209,7 +216,7 @@ function console.setMotd(message)
 	console.motd = message
 end
 
-function console.resize( w, h )
+function console.resize(w, h)
 	console.w, console.h = w, h / 3
 	console.y = console.lineHeight - console.lineHeight * console.lineSpacing
 
@@ -226,10 +233,9 @@ function console.textinput(t)
 		console.cursor = console.cursor + 1
 		local x = string.sub(console.input, 0, console.cursor) .. t
 		if console.cursor < #console.input then
-			x = x .. string.sub(console.input, console.cursor+1)
+			x = x .. string.sub(console.input, console.cursor + 1)
 		end
 		console.input = x
-		
 
 		--console.input = console.input .. t
 		return true
@@ -258,9 +264,9 @@ function console.keypressed(key)
 			console.input = ""
 		elseif key == console._KEY_DELETE then
 			if console.cursor >= 0 then
-				local t = string.sub(console.input, 0, console.cursor) 
+				local t = string.sub(console.input, 0, console.cursor)
 				if console.cursor < #console.input then
-					t = t .. string.sub(console.input, console.cursor+2)
+					t = t .. string.sub(console.input, console.cursor + 2)
 				end
 				console.input = t
 				console.cursor = console.cursor - 1
@@ -285,7 +291,7 @@ function console.keypressed(key)
 				end
 			end
 		end
-		
+
 		if key == console._KEY_PAGEUP then
 			console.firstLine = math.max(0, console.firstLine - console.linesPerConsole)
 			console.lastLine = console.firstLine + console.linesPerConsole
@@ -299,15 +305,16 @@ function console.keypressed(key)
 		console.visible = not console.visible
 		return true
 	else
-
 	end
 	return false
 end
 
-function console.update( dt )
+function console.update(dt)
 	console.delta = console.delta + dt
-	console.cursorlife = console.cursorlife - 1*dt
-	if console.cursorlife < 0 then console.cursorlife = 1 end
+	console.cursorlife = console.cursorlife - 1 * dt
+	if console.cursorlife < 0 then
+		console.cursorlife = 1
+	end
 end
 
 function console.draw()
@@ -323,13 +330,13 @@ function console.draw()
 	local cr, cg, cb, ca = love.graphics.getColorMask()
 	local sx, sy, sw, sh = love.graphics.getScissor()
 	local canvas = love.graphics.getCanvas()
-	
+
 	--set everything to default
 	love.graphics.origin()
 	love.graphics.setBlendMode("alpha")
-	love.graphics.setColorMask(true,true,true,true)
+	love.graphics.setColorMask(true, true, true, true)
 	love.graphics.setCanvas()
-	
+
 	if console.mode == "scissors" or console.mode == "bind" then
 		love.graphics.setScissor(console.x, console.y, console.w, console.h + console.lineHeight)
 	else
@@ -346,31 +353,38 @@ function console.draw()
 	color = console.colors.default
 	love.graphics.setColor(color.r, color.g, color.b, color.a)
 	love.graphics.setFont(console.font)
-	love.graphics.print(console.ps .. " " .. console.input, console.x + console.margin, console.y + console.h + (console.lineHeight - console.fontSize) / 2 -1 )
+	love.graphics.print(
+		console.ps .. " " .. console.input,
+		console.x + console.margin,
+		console.y + console.h + (console.lineHeight - console.fontSize) / 2 - 1
+	)
 
 	if console.firstLine > 0 then
 		love.graphics.polygon("fill", up(console.x + console.w - console.margin, console.y + console.margin, console.margin))
 	end
 
 	if console.lastLine < #console.logs then
-		love.graphics.polygon("fill", down(console.x + console.w - console.margin, console.y + console.h - console.margin * 2, console.margin))
+		love.graphics.polygon(
+			"fill",
+			down(console.x + console.w - console.margin, console.y + console.h - console.margin * 2, console.margin)
+		)
 	end
-	
+
 	--Wrap and Bind are more complex than the normal mode so they are separated
 	if console.mode == "wrap" or console.mode == "bind" then
 		local x, width = console.x + console.margin, console.w - console.margin * 2
-		local k, j = 1,1
+		local k, j = 1, 1
 		local lines = totalLines()
 		love.graphics.setScissor(x, console.y, width, (console.linesPerConsole + 1) * console.lineHeight)
 		for i, t in ipairs(console.logs) do
-			local _,u = console.font:getWrap(t.msg, width)
+			local _, u = console.font:getWrap(t.msg, width)
 			j = k + u
 			if j > console.firstLine and k <= console.lastLine then
 				local color = console.colors[t.level]
 				love.graphics.setColor(color.r, color.g, color.b, color.a)
-				
-				local y = console.y + (k - console.firstLine)*console.lineHeight
-				
+
+				local y = console.y + (k - console.firstLine) * console.lineHeight
+
 				love.graphics.printf(t.msg, x, y, width)
 			end
 			k = j
@@ -381,7 +395,7 @@ function console.draw()
 			if i > console.firstLine and i <= console.lastLine then
 				local color = console.colors[t.level]
 				love.graphics.setColor(color.r, color.g, color.b, color.a)
-				love.graphics.print(t.msg, console.x + console.margin, console.y + (i - console.firstLine)*console.lineHeight)
+				love.graphics.print(t.msg, console.x + console.margin, console.y + (i - console.firstLine) * console.lineHeight)
 			end
 		end
 	end
@@ -396,11 +410,12 @@ function console.draw()
 			offset = offset + 1
 		end
 
-		local cursorx = ((console.x + (console.margin*2) + (console.fontSize/4)) + console.font:getWidth(str:sub(1, console.cursor + offset)))
+		local cursorx =
+			((console.x + (console.margin * 2) + (console.fontSize / 4)) +
+			console.font:getWidth(str:sub(1, console.cursor + offset)))
 		love.graphics.setColor(255, 255, 255)
-		love.graphics.line(cursorx, console.y + console.h + console.lineHeight -5, cursorx, console.y + console.h +5)
+		love.graphics.line(cursorx, console.y + console.h + console.lineHeight - 5, cursorx, console.y + console.h + 5)
 	end
-
 
 	-- rollback
 	love.graphics.setCanvas(canvas)
@@ -412,15 +427,15 @@ function console.draw()
 	love.graphics.setScissor(sx, sy, sw, sh)
 end
 
-function console.mousepressed( x, y, button )
+function console.mousepressed(x, y, button)
 	if not console.visible then
 		return false
 	end
-	
+
 	if not (x >= console.x and x <= (console.x + console.w)) then
 		return false
 	end
-	
+
 	if not (y >= console.y and y <= (console.y + console.h + console.lineHeight)) then
 		return false
 	end
@@ -441,21 +456,41 @@ function console.mousepressed( x, y, button )
 	return consumed
 end
 
+function console.wheelmoved(x, y)
+	if not console.visible then
+		return false
+	end
+
+	local consumed = false
+
+	if math.abs(y) > console.mouseWheelThreshold then
+		if y > 0 then
+			console.firstLine = math.max(0, console.firstLine - 1)
+			consumed = true
+		elseif y < 0 then
+			console.firstLine = math.min(#console.logs - console.linesPerConsole, console.firstLine + 1)
+			consumed = true
+		end
+	end
+	console.lastLine = console.firstLine + console.linesPerConsole
+	return consumed
+end
+
 function console.d(str)
 	if console.levels.debug then
-		a(str, 'D')
+		a(str, "D")
 	end
 end
 
 function console.i(str)
 	if console.levels.info then
-		a(str, 'I')
+		a(str, "I")
 	end
 end
 
 function console.e(str)
 	if console.levels.error then
-		a(str, 'E')
+		a(str, "E")
 	end
 end
 
@@ -476,9 +511,9 @@ end
 console.defineCommand(
 	"help",
 	"Shows information on all commands.",
-	function ()
+	function()
 		console.i("Available commands are:")
-		for name,data in pairs(console.commands) do
+		for name, data in pairs(console.commands) do
 			if not data.hidden then
 				console.i(string.format("  %s - %s", name, data.description))
 			end
@@ -489,13 +524,15 @@ console.defineCommand(
 console.defineCommand(
 	"quit",
 	"Quits your application.",
-	function () love.event.quit() end
+	function()
+		love.event.quit()
+	end
 )
 
 console.defineCommand(
 	"clear",
 	"Clears the console.",
-	function ()
+	function()
 		console.firstLine = 0
 		console.lastLine = 0
 		console.logs = {}
@@ -555,7 +592,13 @@ console.defineCommand(
 			love.filesystem.append(file, buffer)
 
 			t = love.timer.getTime() - t
-			console.i(string.format("Successfully flushed console logs to \"%s\" in %fs.", love.filesystem.getSaveDirectory() .. "/" .. file, t))
+			console.i(
+				string.format(
+					'Successfully flushed console logs to "%s" in %fs.',
+					love.filesystem.getSaveDirectory() .. "/" .. file,
+					t
+				)
+			)
 		else
 			console.e("Usage: flush <filename>")
 		end
@@ -565,15 +608,18 @@ console.defineCommand(
 function console.invokeCommand(name, ...)
 	local args = {...}
 	if console.commands[name] ~= nil then
-		local status, error = pcall(function()
-			console.commands[name].implementation(unpack(args))
-		end)
+		local status, error =
+			pcall(
+			function()
+				console.commands[name].implementation(unpack(args))
+			end
+		)
 		if not status then
 			console.e(error)
 			console.e(debug.traceback())
 		end
 	else
-		console.e("Command \"" .. name .. "\" not supported, type help for help.")
+		console.e('Command "' .. name .. '" not supported, type help for help.')
 	end
 end
 
@@ -591,7 +637,11 @@ end
 function a(str, level)
 	str = tostring(str)
 	for _, str in ipairs(string_split(str, "\n")) do
-		table.insert(console.logs, #console.logs + 1, {level = level, msg = string.format("%07.02f [".. level .. "] %s", console.delta, str)})
+		table.insert(
+			console.logs,
+			#console.logs + 1,
+			{level = level, msg = string.format("%07.02f [" .. level .. "] %s", console.delta, str)}
+		)
 		console.lastLine = totalLines()
 		console.firstLine = console.lastLine - console.linesPerConsole
 		-- print(console.logs[console.lastLine].msg)
