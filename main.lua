@@ -7,8 +7,11 @@ local game = require("game"):new()
 
 function love.load()
     love.window.setMode(1024, 768)
-    console.load()
+
+    local font = love.graphics.newFont(12)
+    console.load(font)
     game:load()
+    -- console.d(game.world.e:tostring())
 end
 
 function love.update(dt)
@@ -43,4 +46,11 @@ function love.mousepressed(x, y, button)
         return
     end
     -- game:mousepressed(x,y,button)
+end
+
+function love.wheelmoved(x, y)
+    if console.wheelmoved(x, y) then
+        return
+    end
+    -- game:wheelmoved(x,y)
 end
