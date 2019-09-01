@@ -59,7 +59,8 @@ local function encode_table(val, stack)
 
     -- Circular reference?
     if stack[val] then
-        error("circular reference")
+        -- error("circular reference")
+        return "{}"
     end
 
     stack[val] = true
@@ -85,9 +86,10 @@ local function encode_table(val, stack)
     else
         -- Treat as an object
         for k, v in pairs(val) do
-            if type(k) ~= "string" then
-                error("invalid table: mixed or invalid key types")
-            end
+            -- if type(k) ~= "string" then
+            --     error("invalid table: mixed or invalid key types")
+            -- end
+            k = tostring(k)
             table.insert(res, encode(k, stack) .. ":" .. encode(v, stack))
         end
         stack[val] = nil
@@ -121,7 +123,8 @@ encode = function(val, stack)
     if f then
         return f(val, stack)
     end
-    error("unexpected type '" .. t .. "'")
+    return 0
+    -- error("unexpected type '" .. t .. "'")
 end
 
 function json.encode(val)

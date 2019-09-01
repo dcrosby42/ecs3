@@ -5,21 +5,21 @@
 -- @license MIT/X11
 
 local STI = {
-	_LICENSE     = "MIT/X11",
-	_URL         = "https://github.com/karai17/Simple-Tiled-Implementation",
-	_VERSION     = "1.2.3.0",
+	_LICENSE = "MIT/X11",
+	_URL = "https://github.com/karai17/Simple-Tiled-Implementation",
+	_VERSION = "1.2.3.0",
 	_DESCRIPTION = "Simple Tiled Implementation is a Tiled Map Editor library designed for the *awesome* LÖVE framework.",
-	cache        = {}
+	cache = {}
 }
 STI.__index = STI
 
-local love  = _G.love
-local cwd   = (...):gsub('%.init$', '') .. "."
+local love = _G.love
+local cwd = (...):gsub("%.init$", "") .. "."
 local utils = require(cwd .. "utils")
-local ceil  = math.ceil
+local ceil = math.ceil
 local floor = math.floor
-local lg    = require(cwd .. "graphics")
-local Map   = {}
+local lg = require(cwd .. "graphics")
+local Map = {}
 Map.__index = Map
 
 local function new(map, plugins, ox, oy)
@@ -30,10 +30,7 @@ local function new(map, plugins, ox, oy)
 	else
 		-- Check for valid map type
 		local ext = map:sub(-4, -1)
-		assert(ext == ".lua", string.format(
-			"Invalid file type: %s. File must be of type: lua.",
-			ext
-		))
+		assert(ext == ".lua", string.format("Invalid file type: %s. File must be of type: lua.", ext))
 
 		-- Get directory of map
 		dir = map:reverse():find("[/\\]") or ""
@@ -78,20 +75,20 @@ function Map:init(path, plugins, ox, oy)
 	end
 
 	self:resize()
-	self.objects       = {}
-	self.tiles         = {}
+	self.objects = {}
+	self.tiles = {}
 	self.tileInstances = {}
-	self.drawRange     = {
+	self.drawRange = {
 		sx = 1,
 		sy = 1,
 		ex = self.width,
-		ey = self.height,
+		ey = self.height
 	}
 	self.offsetx = ox or 0
 	self.offsety = oy or 0
 
 	self.freeBatchSprites = {}
-	setmetatable(self.freeBatchSprites, { __mode = 'k' })
+	setmetatable(self.freeBatchSprites, {__mode = "k"})
 
 	-- Set tiles, images
 	local gid = 1
@@ -154,7 +151,7 @@ end
 -- @param plugins A list of plugins to load
 function Map:loadPlugins(plugins)
 	for _, plugin in ipairs(plugins) do
-		local pluginModulePath = cwd .. 'plugins.' .. plugin
+		local pluginModulePath = cwd .. "plugins." .. plugin
 		local ok, pluginModule = pcall(require, pluginModulePath)
 		if ok then
 			for k, func in pairs(pluginModule) do
@@ -172,19 +169,19 @@ end
 -- @param gid First Global ID in Tileset
 -- @return number Next Tileset's first Global ID
 function Map:setTiles(index, tileset, gid)
-	local quad    = lg.newQuad
-	local imageW  = tileset.imagewidth
-	local imageH  = tileset.imageheight
-	local tileW   = tileset.tilewidth
-	local tileH   = tileset.tileheight
-	local margin  = tileset.margin
+	local quad = lg.newQuad
+	local imageW = tileset.imagewidth
+	local imageH = tileset.imageheight
+	local tileW = tileset.tilewidth
+	local tileH = tileset.tileheight
+	local margin = tileset.margin
 	local spacing = tileset.spacing
-	local w       = utils.get_tiles(imageW, tileW, margin, spacing)
-	local h       = utils.get_tiles(imageH, tileH, margin, spacing)
+	local w = utils.get_tiles(imageW, tileW, margin, spacing)
+	local h = utils.get_tiles(imageH, tileH, margin, spacing)
 
 	for y = 1, h do
 		for x = 1, w do
-			local id    = gid - tileset.firstgid
+			local id = gid - tileset.firstgid
 			local quadX = (x - 1) * tileW + margin + (x - 1) * spacing
 			local quadY = (y - 1) * tileH + margin + (y - 1) * spacing
 			local type = ""
@@ -192,10 +189,10 @@ function Map:setTiles(index, tileset, gid)
 
 			for _, tile in pairs(tileset.tiles) do
 				if tile.id == id then
-					properties  = tile.properties
-					animation   = tile.animation
+					properties = tile.properties
+					animation = tile.animation
 					objectGroup = tile.objectGroup
-					type        = tile.type
+					type = tile.type
 
 					if tile.terrain then
 						terrain = {}
@@ -208,31 +205,27 @@ function Map:setTiles(index, tileset, gid)
 			end
 
 			local tile = {
-				id          = id,
-				gid         = gid,
-				tileset     = index,
-				type        = type,
-				quad        = quad(
-					quadX,  quadY,
-					tileW,  tileH,
-					imageW, imageH
-				),
-				properties  = properties or {},
-				terrain     = terrain,
-				animation   = animation,
+				id = id,
+				gid = gid,
+				tileset = index,
+				type = type,
+				quad = quad(quadX, quadY, tileW, tileH, imageW, imageH),
+				properties = properties or {},
+				terrain = terrain,
+				animation = animation,
 				objectGroup = objectGroup,
-				frame       = 1,
-				time        = 0,
-				width       = tileW,
-				height      = tileH,
-				sx          = 1,
-				sy          = 1,
-				r           = 0,
-				offset      = tileset.tileoffset,
+				frame = 1,
+				time = 0,
+				width = tileW,
+				height = tileH,
+				sx = 1,
+				sy = 1,
+				r = 0,
+				offset = tileset.tileoffset
 			}
 
 			self.tiles[gid] = tile
-			gid             = gid + 1
+			gid = gid + 1
 		end
 	end
 
@@ -245,13 +238,19 @@ end
 function Map:setLayer(layer, path)
 	if layer.encoding then
 		if layer.encoding == "base64" then
-			assert(require "ffi", "Compressed maps require LuaJIT FFI.\nPlease Switch your interperator to LuaJIT or your Tile Layer Format to \"CSV\".")
+			assert(
+				require "ffi",
+				'Compressed maps require LuaJIT FFI.\nPlease Switch your interperator to LuaJIT or your Tile Layer Format to "CSV".'
+			)
 			local fd = love.data.decode("string", "base64", layer.data)
 
 			if not layer.compression then
 				layer.data = utils.get_decompressed_data(fd)
 			else
-				assert(love.data.decompress, "zlib and gzip compression require LOVE 11.0+.\nPlease set your Tile Layer Format to \"Base64 (uncompressed)\" or \"CSV\".")
+				assert(
+					love.data.decompress,
+					'zlib and gzip compression require LOVE 11.0+.\nPlease set your Tile Layer Format to "Base64 (uncompressed)" or "CSV".'
+				)
 
 				if layer.compression == "zlib" then
 					local data = love.data.decompress("string", "zlib", fd)
@@ -266,21 +265,28 @@ function Map:setLayer(layer, path)
 		end
 	end
 
-	layer.x      = (layer.x or 0) + layer.offsetx + self.offsetx
-	layer.y      = (layer.y or 0) + layer.offsety + self.offsety
-	layer.update = function() end
+	layer.x = (layer.x or 0) + layer.offsetx + self.offsetx
+	layer.y = (layer.y or 0) + layer.offsety + self.offsety
+	layer.update = function()
+	end
 
 	if layer.type == "tilelayer" then
 		self:setTileData(layer)
 		self:setSpriteBatches(layer)
-		layer.draw = function() self:drawTileLayer(layer) end
+		layer.draw = function()
+			self:drawTileLayer(layer)
+		end
 	elseif layer.type == "objectgroup" then
 		self:setObjectData(layer)
 		self:setObjectCoordinates(layer)
 		self:setObjectSpriteBatches(layer)
-		layer.draw = function() self:drawObjectLayer(layer) end
+		layer.draw = function()
+			self:drawObjectLayer(layer)
+		end
 	elseif layer.type == "imagelayer" then
-		layer.draw = function() self:drawImageLayer(layer) end
+		layer.draw = function()
+			self:drawImageLayer(layer)
+		end
 
 		if layer.image ~= "" then
 			local formatted_path = utils.format_path(path .. layer.image)
@@ -288,8 +294,8 @@ function Map:setLayer(layer, path)
 				utils.cache_image(STI, formatted_path)
 			end
 
-			layer.image  = STI.cache[formatted_path]
-			layer.width  = layer.image:getWidth()
+			layer.image = STI.cache[formatted_path]
+			layer.width = layer.image:getWidth()
 			layer.height = layer.image:getHeight()
 		end
 	end
@@ -307,7 +313,7 @@ function Map:setTileData(layer)
 		return
 	end
 
-	local i   = 1
+	local i = 1
 	local map = {}
 
 	for y = 1, layer.height do
@@ -331,7 +337,7 @@ end
 -- @param layer The Object Layer
 function Map:setObjectData(layer)
 	for _, object in ipairs(layer.objects) do
-		object.layer            = layer
+		object.layer = layer
 		self.objects[object.id] = object
 	end
 end
@@ -340,10 +346,10 @@ end
 -- @param layer The Object Layer
 function Map:setObjectCoordinates(layer)
 	for _, object in ipairs(layer.objects) do
-		local x   = layer.x + object.x
-		local y   = layer.y + object.y
-		local w   = object.width
-		local h   = object.height
+		local x = layer.x + object.x
+		local y = layer.y + object.y
+		local w = object.width
+		local h = object.height
 		local cos = math.cos(math.rad(object.rotation))
 		local sin = math.sin(math.rad(object.rotation))
 
@@ -351,15 +357,15 @@ function Map:setObjectCoordinates(layer)
 			object.rectangle = {}
 
 			local vertices = {
-				{ x=x,     y=y     },
-				{ x=x + w, y=y     },
-				{ x=x + w, y=y + h },
-				{ x=x,     y=y + h },
+				{x = x, y = y},
+				{x = x + w, y = y},
+				{x = x + w, y = y + h},
+				{x = x, y = y + h}
 			}
 
 			for _, vertex in ipairs(vertices) do
 				vertex.x, vertex.y = utils.rotate_vertex(self, vertex, x, y, cos, sin)
-				table.insert(object.rectangle, { x = vertex.x, y = vertex.y })
+				table.insert(object.rectangle, {x = vertex.x, y = vertex.y})
 			end
 		elseif object.shape == "ellipse" then
 			object.ellipse = {}
@@ -367,18 +373,18 @@ function Map:setObjectCoordinates(layer)
 
 			for _, vertex in ipairs(vertices) do
 				vertex.x, vertex.y = utils.rotate_vertex(self, vertex, x, y, cos, sin)
-				table.insert(object.ellipse, { x = vertex.x, y = vertex.y })
+				table.insert(object.ellipse, {x = vertex.x, y = vertex.y})
 			end
 		elseif object.shape == "polygon" then
 			for _, vertex in ipairs(object.polygon) do
-				vertex.x           = vertex.x + x
-				vertex.y           = vertex.y + y
+				vertex.x = vertex.x + x
+				vertex.y = vertex.y + y
 				vertex.x, vertex.y = utils.rotate_vertex(self, vertex, x, y, cos, sin)
 			end
 		elseif object.shape == "polyline" then
 			for _, vertex in ipairs(object.polyline) do
-				vertex.x           = vertex.x + x
-				vertex.y           = vertex.y + y
+				vertex.x = vertex.x + x
+				vertex.y = vertex.y + y
 				vertex.x, vertex.y = utils.rotate_vertex(self, vertex, x, y, cos, sin)
 			end
 		end
@@ -455,16 +461,16 @@ end
 -- @param number Tile location on Y axis (in tiles)
 function Map:addNewLayerTile(layer, chunk, tile, x, y)
 	local tileset = tile.tileset
-	local image   = self.tilesets[tile.tileset].image
+	local image = self.tilesets[tile.tileset].image
 	local batches
 	local size
 
 	if chunk then
 		batches = chunk.batches
-		size    = chunk.width * chunk.height
+		size = chunk.width * chunk.height
 	else
 		batches = layer.batches
-		size    = layer.width * layer.height
+		size = layer.width * layer.height
 	end
 
 	batches[tileset] = batches[tileset] or lg.newSpriteBatch(image, size)
@@ -475,11 +481,11 @@ function Map:addNewLayerTile(layer, chunk, tile, x, y)
 	local instance = {
 		layer = layer,
 		chunk = chunk,
-		gid   = tile.gid,
-		x     = tileX,
-		y     = tileY,
-		r     = tile.r,
-		oy    = 0
+		gid = tile.gid,
+		x = tileX,
+		y = tileY,
+		r = tile.r,
+		oy = 0
 	}
 
 	-- NOTE: STI can run headless so it is not guaranteed that a batch exists.
@@ -500,10 +506,10 @@ function Map:set_batches(layer, chunk)
 	end
 
 	if self.orientation == "orthogonal" or self.orientation == "isometric" then
-		local startX     = 1
-		local startY     = 1
-		local endX       = chunk and chunk.width  or layer.width
-		local endY       = chunk and chunk.height or layer.height
+		local startX = 1
+		local startY = 1
+		local endX = chunk and chunk.width or layer.width
+		local endY = chunk and chunk.height or layer.height
 		local incrementX = 1
 		local incrementY = 1
 
@@ -608,23 +614,26 @@ end
 -- @param layer The Object Layer
 function Map:setObjectSpriteBatches(layer)
 	local newBatch = lg.newSpriteBatch
-	local batches  = {}
+	local batches = {}
 
 	if layer.draworder == "topdown" then
-		table.sort(layer.objects, function(a, b)
-			return a.y + a.height < b.y + b.height
-		end)
+		table.sort(
+			layer.objects,
+			function(a, b)
+				return a.y + a.height < b.y + b.height
+			end
+		)
 	end
 
 	for _, object in ipairs(layer.objects) do
 		if object.gid then
-			local tile    = self.tiles[object.gid] or self:setFlippedGID(object.gid)
+			local tile = self.tiles[object.gid] or self:setFlippedGID(object.gid)
 			local tileset = tile.tileset
-			local image   = self.tilesets[tileset].image
+			local image = self.tilesets[tileset].image
 
 			batches[tileset] = batches[tileset] or newBatch(image)
 
-			local sx = object.width  / tile.width
+			local sx = object.width / tile.width
 			local sy = object.height / tile.height
 
 			-- Tiled rotates around bottom left corner, where love2D rotates around top left corner
@@ -656,14 +665,14 @@ function Map:setObjectSpriteBatches(layer)
 			end
 
 			local instance = {
-				id    = batch:add(tile.quad, tileX, tileY, tileR, tile.sx * sx, tile.sy * sy, ox, oy),
+				id = batch:add(tile.quad, tileX, tileY, tileR, tile.sx * sx, tile.sy * sy, ox, oy),
 				batch = batch,
 				layer = layer,
-				gid   = tile.gid,
-				x     = tileX,
-				y     = tileY,
-				r     = tileR,
-				oy    = oy
+				gid = tile.gid,
+				x = tileX,
+				y = tileY,
+				r = tileR,
+				oy = oy
 			}
 
 			self.tileInstances[tile.gid] = self.tileInstances[tile.gid] or {}
@@ -681,15 +690,17 @@ end
 function Map:addCustomLayer(name, index)
 	index = index or #self.layers + 1
 	local layer = {
-      type       = "customlayer",
-      name       = name,
-      visible    = true,
-      opacity    = 1,
-      properties = {},
-    }
+		type = "customlayer",
+		name = name,
+		visible = true,
+		opacity = 1,
+		properties = {}
+	}
 
-	function layer.draw() end
-	function layer.update() end
+	function layer.draw()
+	end
+	function layer.update()
+	end
 
 	table.insert(self.layers, index, layer)
 	self.layers[name] = self.layers[index]
@@ -703,19 +714,21 @@ end
 function Map:convertToCustomLayer(index)
 	local layer = assert(self.layers[index], "Layer not found: " .. index)
 
-	layer.type     = "customlayer"
-	layer.x        = nil
-	layer.y        = nil
-	layer.width    = nil
-	layer.height   = nil
+	layer.type = "customlayer"
+	layer.x = nil
+	layer.y = nil
+	layer.width = nil
+	layer.height = nil
 	layer.encoding = nil
-	layer.data     = nil
-	layer.chunks   = nil
-	layer.objects  = nil
-	layer.image    = nil
+	layer.data = nil
+	layer.chunks = nil
+	layer.objects = nil
+	layer.image = nil
 
-	function layer.draw() end
-	function layer.update() end
+	function layer.draw()
+	end
+	function layer.update()
+	end
 
 	return layer
 end
@@ -787,11 +800,13 @@ function Map:update(dt)
 			tile.time = tile.time + dt * 1000
 
 			while tile.time > tonumber(tile.animation[tile.frame].duration) do
-				update     = true
-				tile.time  = tile.time  - tonumber(tile.animation[tile.frame].duration)
+				update = true
+				tile.time = tile.time - tonumber(tile.animation[tile.frame].duration)
 				tile.frame = tile.frame + 1
 
-				if tile.frame > #tile.animation then tile.frame = 1 end
+				if tile.frame > #tile.animation then
+					tile.frame = 1
+				end
 			end
 
 			if update and self.tileInstances[tile.gid] then
@@ -847,10 +862,10 @@ end
 --- Draw an individual Layer
 -- @param layer The Layer to draw
 function Map.drawLayer(_, layer)
-	local r,g,b,a = lg.getColor()
+	local r, g, b, a = lg.getColor()
 	lg.setColor(r, g, b, a * layer.opacity)
 	layer:draw()
-	lg.setColor(r,g,b,a)
+	lg.setColor(r, g, b, a)
 end
 
 --- Default draw function for Tile Layers
@@ -887,10 +902,10 @@ function Map:drawObjectLayer(layer)
 
 	assert(layer.type == "objectgroup", "Invalid layer type: " .. layer.type .. ". Layer must be of type: objectgroup")
 
-	local line  = { 160, 160, 160, 255 * layer.opacity       }
-	local fill  = { 160, 160, 160, 255 * layer.opacity * 0.5 }
-	local r,g,b,a = lg.getColor()
-	local reset = {   r,   g,   b,   a * layer.opacity       }
+	local line = {160, 160, 160, 255 * layer.opacity}
+	local fill = {160, 160, 160, 255 * layer.opacity * 0.5}
+	local r, g, b, a = lg.getColor()
+	local reset = {r, g, b, a * layer.opacity}
 
 	local function sortVertices(obj)
 		local vertex = {}
@@ -947,7 +962,7 @@ function Map:drawObjectLayer(layer)
 	for _, batch in pairs(layer.batches) do
 		lg.draw(batch, 0, 0)
 	end
-	lg.setColor(r,g,b,a)
+	lg.setColor(r, g, b, a)
 end
 
 --- Default draw function for Image Layers
@@ -981,51 +996,51 @@ end
 -- @param gid The flagged Global ID
 -- @return table Flipped Tile
 function Map:setFlippedGID(gid)
-	local bit31   = 2147483648
-	local bit30   = 1073741824
-	local bit29   = 536870912
-	local flipX   = false
-	local flipY   = false
-	local flipD   = false
+	local bit31 = 2147483648
+	local bit30 = 1073741824
+	local bit29 = 536870912
+	local flipX = false
+	local flipY = false
+	local flipD = false
 	local realgid = gid
 
 	if realgid >= bit31 then
 		realgid = realgid - bit31
-		flipX   = not flipX
+		flipX = not flipX
 	end
 
 	if realgid >= bit30 then
 		realgid = realgid - bit30
-		flipY   = not flipY
+		flipY = not flipY
 	end
 
 	if realgid >= bit29 then
 		realgid = realgid - bit29
-		flipD   = not flipD
+		flipD = not flipD
 	end
 
 	local tile = self.tiles[realgid]
 	local data = {
-		id         = tile.id,
-		gid        = gid,
-		tileset    = tile.tileset,
-		frame      = tile.frame,
-		time       = tile.time,
-		width      = tile.width,
-		height     = tile.height,
-		offset     = tile.offset,
-		quad       = tile.quad,
+		id = tile.id,
+		gid = gid,
+		tileset = tile.tileset,
+		frame = tile.frame,
+		time = tile.time,
+		width = tile.width,
+		height = tile.height,
+		offset = tile.offset,
+		quad = tile.quad,
 		properties = tile.properties,
-		terrain    = tile.terrain,
-		animation  = tile.animation,
-		sx         = tile.sx,
-		sy         = tile.sy,
-		r          = tile.r,
+		terrain = tile.terrain,
+		animation = tile.animation,
+		sx = tile.sx,
+		sy = tile.sy,
+		r = tile.r
 	}
 
 	if flipX then
 		if flipY and flipD then
-			data.r  = math.rad(-90)
+			data.r = math.rad(-90)
 			data.sy = -1
 		elseif flipY then
 			data.sx = -1
@@ -1042,7 +1057,7 @@ function Map:setFlippedGID(gid)
 			data.sy = -1
 		end
 	elseif flipD then
-		data.r  = math.rad(90)
+		data.r = math.rad(90)
 		data.sy = -1
 	end
 
@@ -1147,22 +1162,9 @@ function Map:swapTile(instance, tile)
 	-- Update sprite batch
 	if instance.batch then
 		if tile then
-			instance.batch:set(
-				instance.id,
-				tile.quad,
-				instance.x,
-				instance.y,
-				tile.r,
-				tile.sx,
-				tile.sy
-			)
+			instance.batch:set(instance.id, tile.quad, instance.x, instance.y, tile.r, tile.sx, tile.sy)
 		else
-			instance.batch:set(
-				instance.id,
-				instance.x,
-				instance.y,
-				0,
-				0)
+			instance.batch:set(instance.id, instance.x, instance.y, 0, 0)
 
 			self.freeBatchSprites[instance.batch] = self.freeBatchSprites[instance.batch] or {}
 			table.insert(self.freeBatchSprites[instance.batch], instance)
@@ -1192,12 +1194,12 @@ function Map:swapTile(instance, tile)
 
 		newInstance.layer = instance.layer
 		newInstance.batch = instance.batch
-		newInstance.id    = instance.id
-		newInstance.gid   = tile.gid or 0
-		newInstance.x     = instance.x
-		newInstance.y     = instance.y
-		newInstance.r     = tile.r or 0
-		newInstance.oy    = tile.r ~= 0 and tile.height or 0
+		newInstance.id = instance.id
+		newInstance.gid = tile.gid or 0
+		newInstance.x = instance.x
+		newInstance.y = instance.y
+		newInstance.r = tile.r or 0
+		newInstance.oy = tile.r ~= 0 and tile.height or 0
 		table.insert(self.tileInstances[tile.gid], newInstance)
 	end
 end
@@ -1207,35 +1209,26 @@ end
 -- @param y The Y axis location of the point (in tiles)
 -- @return number The X axis location of the point (in pixels)
 -- @return number The Y axis location of the point (in pixels)
-function Map:convertTileToPixel(x,y)
+function Map:convertTileToPixel(x, y)
 	if self.orientation == "orthogonal" then
 		local tileW = self.tilewidth
 		local tileH = self.tileheight
-		return
-			x * tileW,
-			y * tileH
+		return x * tileW, y * tileH
 	elseif self.orientation == "isometric" then
-		local mapH    = self.height
-		local tileW   = self.tilewidth
-		local tileH   = self.tileheight
+		local mapH = self.height
+		local tileW = self.tilewidth
+		local tileH = self.tileheight
 		local offsetX = mapH * tileW / 2
-		return
-			(x - y) * tileW / 2 + offsetX,
-			(x + y) * tileH / 2
-	elseif self.orientation == "staggered" or
-		self.orientation     == "hexagonal" then
-		local tileW   = self.tilewidth
-		local tileH   = self.tileheight
+		return (x - y) * tileW / 2 + offsetX, (x + y) * tileH / 2
+	elseif self.orientation == "staggered" or self.orientation == "hexagonal" then
+		local tileW = self.tilewidth
+		local tileH = self.tileheight
 		local sideLen = self.hexsidelength or 0
 
 		if self.staggeraxis == "x" then
-			return
-				x * tileW,
-				ceil(y) * (tileH + sideLen) + (ceil(y) % 2 == 0 and tileH or 0)
+			return x * tileW, ceil(y) * (tileH + sideLen) + (ceil(y) % 2 == 0 and tileH or 0)
 		else
-			return
-				ceil(x) * (tileW + sideLen) + (ceil(x) % 2 == 0 and tileW or 0),
-				y * tileH
+			return ceil(x) * (tileW + sideLen) + (ceil(x) % 2 == 0 and tileW or 0), y * tileH
 		end
 	end
 end
@@ -1249,20 +1242,16 @@ function Map:convertPixelToTile(x, y)
 	if self.orientation == "orthogonal" then
 		local tileW = self.tilewidth
 		local tileH = self.tileheight
-		return
-			x / tileW,
-			y / tileH
+		return x / tileW, y / tileH
 	elseif self.orientation == "isometric" then
-		local mapH    = self.height
-		local tileW   = self.tilewidth
-		local tileH   = self.tileheight
+		local mapH = self.height
+		local tileW = self.tilewidth
+		local tileH = self.tileheight
 		local offsetX = mapH * tileW / 2
-		return
-			y / tileH + (x - offsetX) / tileW,
-			y / tileH - (x - offsetX) / tileW
+		return y / tileH + (x - offsetX) / tileW, y / tileH - (x - offsetX) / tileW
 	elseif self.orientation == "staggered" then
-		local staggerX = self.staggeraxis  == "x"
-		local even     = self.staggerindex == "even"
+		local staggerX = self.staggeraxis == "x"
+		local even = self.staggerindex == "even"
 
 		local function topLeft(x, y)
 			if staggerX then
@@ -1337,12 +1326,12 @@ function Map:convertPixelToTile(x, y)
 			y = y - (even and tileH / 2 or 0)
 		end
 
-		local halfH      = tileH / 2
-		local ratio      = tileH / tileW
+		local halfH = tileH / 2
+		local ratio = tileH / tileW
 		local referenceX = ceil(x / tileW)
 		local referenceY = ceil(y / tileH)
-		local relativeX  = x - referenceX * tileW
-		local relativeY  = y - referenceY * tileH
+		local relativeX = x - referenceX * tileW
+		local relativeY = y - referenceY * tileH
 
 		if (halfH - relativeX * ratio > relativeY) then
 			return topLeft(referenceX, referenceY)
@@ -1356,29 +1345,29 @@ function Map:convertPixelToTile(x, y)
 
 		return referenceX, referenceY
 	elseif self.orientation == "hexagonal" then
-		local staggerX  = self.staggeraxis  == "x"
-		local even      = self.staggerindex == "even"
-		local tileW     = self.tilewidth
-		local tileH     = self.tileheight
-		local sideLenX  = 0
-		local sideLenY  = 0
+		local staggerX = self.staggeraxis == "x"
+		local even = self.staggerindex == "even"
+		local tileW = self.tilewidth
+		local tileH = self.tileheight
+		local sideLenX = 0
+		local sideLenY = 0
 
-		local colW       = tileW / 2
-		local rowH       = tileH / 2
+		local colW = tileW / 2
+		local rowH = tileH / 2
 		if staggerX then
 			sideLenX = self.hexsidelength
 			x = x - (even and tileW or (tileW - sideLenX) / 2)
-			colW = colW - (colW  - sideLenX / 2) / 2
+			colW = colW - (colW - sideLenX / 2) / 2
 		else
 			sideLenY = self.hexsidelength
 			y = y - (even and tileH or (tileH - sideLenY) / 2)
-			rowH = rowH - (rowH  - sideLenY / 2) / 2
+			rowH = rowH - (rowH - sideLenY / 2) / 2
 		end
 
 		local referenceX = ceil(x) / (colW * 2)
 		local referenceY = ceil(y) / (rowH * 2)
 
-    -- If in staggered line, then shift reference by 0.5 of other axes
+		-- If in staggered line, then shift reference by 0.5 of other axes
 		if staggerX then
 			if (floor(referenceX) % 2 == 0) == even then
 				referenceY = referenceY - 0.5
@@ -1389,31 +1378,31 @@ function Map:convertPixelToTile(x, y)
 			end
 		end
 
-		local relativeX  = x - referenceX * colW * 2
-		local relativeY  = y - referenceY * rowH * 2
+		local relativeX = x - referenceX * colW * 2
+		local relativeY = y - referenceY * rowH * 2
 		local centers
 
 		if staggerX then
-			local left    = sideLenX / 2
+			local left = sideLenX / 2
 			local centerX = left + colW
 			local centerY = tileH / 2
 
 			centers = {
-				{ x = left,           y = centerY        },
-				{ x = centerX,        y = centerY - rowH },
-				{ x = centerX,        y = centerY + rowH },
-				{ x = centerX + colW, y = centerY        },
+				{x = left, y = centerY},
+				{x = centerX, y = centerY - rowH},
+				{x = centerX, y = centerY + rowH},
+				{x = centerX + colW, y = centerY}
 			}
 		else
-			local top     = sideLenY / 2
+			local top = sideLenY / 2
 			local centerX = tileW / 2
 			local centerY = top + rowH
 
 			centers = {
-				{ x = centerX,        y = top },
-				{ x = centerX - colW, y = centerY },
-				{ x = centerX + colW, y = centerY },
-				{ x = centerX,        y = centerY + rowH }
+				{x = centerX, y = top},
+				{x = centerX - colW, y = centerY},
+				{x = centerX + colW, y = centerY},
+				{x = centerX, y = centerY + rowH}
 			}
 		end
 
@@ -1434,24 +1423,22 @@ function Map:convertPixelToTile(x, y)
 		end
 
 		local offsetsStaggerX = {
-			{ x = 1, y =  1 },
-			{ x = 2, y =  0 },
-			{ x = 2, y =  1 },
-			{ x = 3, y =  1 },
+			{x = 1, y = 1},
+			{x = 2, y = 0},
+			{x = 2, y = 1},
+			{x = 3, y = 1}
 		}
 
 		local offsetsStaggerY = {
-			{ x =  1, y = 1 },
-			{ x =  0, y = 2 },
-			{ x =  1, y = 2 },
-			{ x =  1, y = 3 },
+			{x = 1, y = 1},
+			{x = 0, y = 2},
+			{x = 1, y = 2},
+			{x = 1, y = 3}
 		}
 
 		local offsets = staggerX and offsetsStaggerX or offsetsStaggerY
 
-		return
-			referenceX + offsets[nearest].x,
-			referenceY + offsets[nearest].y
+		return referenceX + offsets[nearest].x, referenceY + offsets[nearest].y
 	end
 end
 

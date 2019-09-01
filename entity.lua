@@ -46,26 +46,6 @@ function Entity:tostring()
     return s
 end
 
-function Entity:totable(childDepth)
-    if childDepth == nil then
-        childDepth = 0
-    end
-    local t = {}
-    t.eid = self.eid
-    t.comps = self.comps
-    if childDepth > 0 then
-        t.children = {}
-        for i = 1, #self.children do
-            table.insert(t.children, self.children[i]:totable(childDepth - 1))
-        end
-    end
-    return t
-end
-
-function Entity:tojson(childDepth)
-    return json.encode(self:totable(childDepth))
-end
-
 -- Returns true if this Entity is the root
 function Entity:isRoot()
     return not self.parent
@@ -78,6 +58,23 @@ function Entity:getRoot()
     else
         return self.parent:getRoot()
     end
+end
+
+function Entity:findEid(eid)
+    if self.eid == eid then
+        return self
+    end
+    for i = 1, #self.children do
+        local e = self.children[i]:findEid(eid)
+        if e then
+            return e
+        end
+    end
+    return nil
+end
+
+function Entity:addChild(e)
+    self.children[#self.children + 1] = e
 end
 
 return Entity
