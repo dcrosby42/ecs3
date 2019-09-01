@@ -1,6 +1,8 @@
 local drawEntity
 local drawEntities
 
+local LabelFont = love.graphics.newFont(8)
+
 function drawEntities(es, res)
     for i = 1, #es do
         drawEntity(es[i])
@@ -45,6 +47,7 @@ function drawEntity(e, res)
             e:withComp(
                 "rect",
                 function(rect)
+                    love.graphics.setFont(LabelFont)
                     love.graphics.rectangle("line", rect.x, rect.y, rect.w, rect.h)
                     love.graphics.print(label.text, rect.x, rect.y)
                 end

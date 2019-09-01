@@ -9,8 +9,10 @@ return {
   tilewidth = 16,
   tileheight = 16,
   nextlayerid = 5,
-  nextobjectid = 11,
-  properties = {},
+  nextobjectid = 13,
+  properties = {
+    ["startHere"] = true
+  },
   tilesets = {
     {
       name = "Overworld",
@@ -345,28 +347,12 @@ return {
           }
         },
         {
-          id = 9,
-          name = "garden",
-          type = "portal",
-          shape = "rectangle",
-          x = 17,
-          y = 33,
-          width = 16,
-          height = 16,
-          rotation = 0,
-          visible = true,
-          properties = {
-            ["targetMap"] = "southgarden",
-            ["targetPortal"] = "main"
-          }
-        },
-        {
           id = 10,
           name = "cave",
           type = "portal",
           shape = "rectangle",
-          x = 17,
-          y = 33,
+          x = 16,
+          y = 31,
           width = 16,
           height = 16,
           rotation = 0,
@@ -374,6 +360,22 @@ return {
           properties = {
             ["targetMap"] = "cliffcave",
             ["targetPortal"] = "entrance"
+          }
+        },
+        {
+          id = 12,
+          name = "Dyrkn Start",
+          type = "entity",
+          shape = "rectangle",
+          x = 80,
+          y = 33,
+          width = 16,
+          height = 15,
+          rotation = 0,
+          visible = true,
+          properties = {
+            ["entityType"] = "dyrkn",
+            ["init"] = true
           }
         }
       }

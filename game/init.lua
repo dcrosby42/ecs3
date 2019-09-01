@@ -3,6 +3,7 @@ local ScriptLoader = require "game.scriptloader"
 local Entity = require "entity"
 local gameconsole = require "game.console"
 local json = require "json"
+local T = require "tablehelpers"
 
 j = gameconsole.j
 
@@ -20,24 +21,38 @@ function Game:new()
     return game
 end
 
-function Game:load()
-    -- RESOURCES
-    self.res.maps = MapLoader.loadAll("island")
-    for k, m in pairs(self.res.maps) do
-        for _, layer in pairs(m.map.layers) do
-            if layer.type == "objectgroup" then
-                layer.visible = false
-            end
-        end
+local DefaultMapScale = 3
+function initializeEntitiesFromMap(mapName, res)
+    local map = res.maps[mapName]
+    if not map then
+        error("No map named " .. mapName)
     end
 
-    self.res.scripts = ScriptLoader.loadAll()
-
-    -- ENTITIES
     local mapEnt = Entity:new()
-    mapEnt:newComp({type = "map", resource = "southgarden"})
-    mapEnt:newComp({type = "camera", tx = 0, ty = 0, sx = 3, sy = 3})
-    mapEnt:newComp({type = "script", name = "mapflip"})
+    mapEnt:newComp({type = "map", resource = mapName})
+    mapEnt:newComp({type = "camera", tx = 0, ty = 0, sx = DefaultMapScale, sy = DefaultMapScale})
+    -- mapEnt:newComp({type = "script", name = "mapflip"})
+
+    -- self.res.maps[initialMap].map.layers.objects.objects)
+
+    for k, edef in pairs(map.meta.entity) do
+        if edef.entity.type == "dyrkn" then
+            -- print(T.debugString(edef))
+            local e = Entity:new()
+            e:newComp(
+                {
+                    type = "rect",
+                    x = edef.mapobj.x,
+                    y = edef.mapobj.y,
+                    w = edef.mapobj.width,
+                    h = edef.mapobj.height
+                }
+            )
+            e:newComp({type = "label", text = edef.name})
+            print(e:tostring())
+            mapEnt:addChild(e)
+        end
+    end
 
     -- local map = map1
     -- if map.layers.westpoint.layers.plan then
@@ -50,8 +65,25 @@ function Game:load()
     --         end
     --     end
     -- end
+    return mapEnt
+end
 
-    self.world.e = mapEnt
+function Game:load()
+    -- RESOURCES
+    self.res.maps = MapLoader.loadAll("island")
+    self.res.scripts = ScriptLoader.loadAll()
+
+    local initialMap = "?"
+    for _, m in pairs(self.res.maps) do
+        if m.startHere then
+            initialMap = m.name
+        end
+    end
+    print("initial map: " .. initialMap)
+
+    self.world.e = initializeEntitiesFromMap(initialMap, self.res)
+
+    -- self.world.e = mapEnt
 end
 
 function Game:update(dt)
