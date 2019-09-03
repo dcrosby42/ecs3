@@ -13,7 +13,7 @@ end
 
 function love.update(dt)
     console.update(dt)
-    game:update(dt)
+    game:update({dt = dt, keyboard = love.keyboard})
 end
 
 function love.draw()

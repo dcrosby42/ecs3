@@ -1,7 +1,9 @@
 local MapLoader = require "game.maploader"
 local ScriptLoader = require "game.scriptloader"
-local Entity = require "entity"
+local SpriteLoader = require "game.sprites"
 local gameconsole = require "game.console"
+
+local Entity = require "entity"
 local json = require "json"
 local T = require "tablehelpers"
 
@@ -17,7 +19,6 @@ function Game:new()
     local game = setmetatable({}, Game)
     game.world = {}
     game.res = {}
-    game.input = {}
     return game
 end
 
@@ -48,7 +49,23 @@ function initializeEntitiesFromMap(mapName, res)
                     h = edef.mapobj.height
                 }
             )
-            e:newComp({type = "label", text = edef.name})
+            e:newComp({type = "sprite", anim = "character/idle/d", t = 0})
+            e:newComp(
+                {
+                    type = "controller",
+                    up = false,
+                    down = false,
+                    left = false,
+                    right = false,
+                    justUp = false,
+                    justDown = false,
+                    justLeft = false,
+                    justRight = false,
+                    lastDir = ""
+                }
+            )
+            e:newComp({type = "script", name = "character"})
+
             print(e:tostring())
             mapEnt:addChild(e)
         end
@@ -72,6 +89,7 @@ function Game:load()
     -- RESOURCES
     self.res.maps = MapLoader.loadAll("island")
     self.res.scripts = ScriptLoader.loadAll()
+    self.res.sprites = SpriteLoader.loadAll()
 
     local initialMap = "?"
     for _, m in pairs(self.res.maps) do
@@ -86,10 +104,8 @@ function Game:load()
     -- self.world.e = mapEnt
 end
 
-function Game:update(dt)
-    self.input.dt = dt
-    updateEntity(self.world.e, self.input, self.res)
-    self.input = {}
+function Game:update(input)
+    updateEntity(self.world.e, input, self.res)
 end
 
 function Game:draw()

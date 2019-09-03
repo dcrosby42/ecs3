@@ -1,3 +1,5 @@
+local console = require("console")
+
 local drawEntity
 local drawEntities
 
@@ -5,7 +7,7 @@ local LabelFont = love.graphics.newFont(8)
 
 function drawEntities(es, res)
     for i = 1, #es do
-        drawEntity(es[i])
+        drawEntity(es[i], res)
     end
 end
 
@@ -54,6 +56,34 @@ function drawEntity(e, res)
             )
         end
     )
+
+    drawSprite(e, res)
+end
+
+function drawSprite(e, res)
+    local sprite = e:getComp("sprite")
+    local rect = e:getComp("rect")
+    if sprite == nil or rect == nil then
+        return
+    end
+    local anim = res.sprites[sprite.anim]
+    if anim == nil then
+        console.e("No sprite for anim named " .. sprite.anim)
+        return
+    end
+    local pic = anim.func(sprite.t)
+    if pic == nil then
+        console.e("No pic @ time=" .. sprite.t .. " for anim named " .. sprite.anim)
+        return
+    end
+
+    local x, y = rect.x, rect.y
+    local r = 0
+    local offx, offy = 0, 0
+
+    -- love.graphics.setColor(unpack(pic.color))
+    love.graphics.setColor(1, 1, 1)
+    love.graphics.draw(pic.image, pic.quad, x, y, r, pic.sx, pic.sy, offx, offy)
 end
 
 return drawEntity
